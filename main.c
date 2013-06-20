@@ -37,8 +37,6 @@
 
 
 
-
-
 /* This function is used to transmit a string of characters via
  * the USART specified in USARTx.
  *
@@ -265,9 +263,8 @@ int main(void) {
 												RCC_ClockFreq.PCLK2_Frequency,
 												RCC_ClockFreq.ADCCLK_Frequency);
 
-#define SD_CARD_TEST
 
-#ifdef SD_CARD_TEST
+    // SD Card Test
     //
     // Disk initialization - this sets SPI1 to correct mode and initializes the SD/MMC card
     //
@@ -311,7 +308,7 @@ int main(void) {
 				(WORD)fs->fs_type,
 				(fs->fs_type==FS_FAT12) ? "FAT12" : (fs->fs_type==FS_FAT16) ? "FAT16" : "FAT32",
 				(DWORD)fs->csize * 512, (WORD)fs->n_fats,
-				fs->n_rootdir, fs->sects_fat, (DWORD)fs->max_clust - 2,
+				fs->n_rootdir, fs->fsize, (DWORD)fs->n_fatent - 2,
 				fs->fatbase, fs->dirbase, fs->database
 		);
 
@@ -332,85 +329,18 @@ int main(void) {
 		iprintf("%u files, %lu bytes.\n%u folders.\n"
 				"%lu KB total disk space.\n%lu KB available.\n",
 				acc_files, acc_size, acc_dirs,
-				(fs->max_clust - 2) * (fs->csize / 2), p2 * (fs->csize / 2)
+				(fs->n_fatent - 2) * (fs->csize / 2), p2 * (fs->csize / 2)
 		);
 	}
 
+	iprintf("now sending file:\n");
 
-	f_mkdir("123blub");
+	FIL *fp;
 
+	res = f_open (fp, "/VARIOUS/ROLLIN~1.109/01MAJO~1.MP3", FA_OPEN_EXISTING);
 
-
-    while(1);
-#endif // SD_CARD_TEST
-
-#ifdef ENCODER_TEST
-
-    //
-    // Configuring quadrature encoder using TIM4 and pins PB6 & PB7
-    //
-
-
-
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6|GPIO_Pin_7;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-    GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-    TIM_SetAutoreload(TIM4, 0xffff);
-    TIM_EncoderInterfaceConfig(TIM4, TIM_EncoderMode_TI12, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
-
-    TIM_Cmd(TIM4, ENABLE);
-
-    iprintf("\r\n");
-    while(1) {
-    	w = TIM_GetCounter(TIM4);
-    	iprintf("\r%5d ", w >> 2);
-    	delay();
-    	delay();
-    	delay();
-    	delay();
-    }
-#endif // ENCODER_TEST
-
-#define RTC_TEST
-
-#ifdef RTC_TEST
-    //
-    // Thanks for the sources, Mard!
-    //
-
-    // Enable clocks, access to backup domain, and reset it
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
-    PWR_BackupAccessCmd(ENABLE);
-    BKP_DeInit();
-
-    // Enable LSE and wait for it to come up
-    RCC_LSEConfig(RCC_LSE_ON);
-    while (RCC_GetFlagStatus(RCC_FLAG_LSERDY) == RESET);
-
-    // Assing LSE osc as clock source
-    RCC_RTCCLKConfig(RCC_RTCCLKSource_LSE);
-
-    // Enable RTC clock entry, wait for sync
-    RCC_RTCCLKCmd(ENABLE);
-    RTC_WaitForSynchro();
-    RTC_WaitForLastTask();
-
-    // Set prescaler - has to be one less than the value needed!
-    RTC_SetPrescaler(32767);
-    RTC_WaitForLastTask();
-
-    uint32_t dw1 = 0xFFFFFFFF;
-	while(1) {
-        dw = RTC_GetCounter();
-        if(dw != dw1) {
-            iprintf("%8ld\r\n", dw);
-            dw1 = dw;
-        }
-    }
-#endif // RTC_TEST
+	if (res != FR_OK)
+		iprintf("error opening file.");
 
 
 

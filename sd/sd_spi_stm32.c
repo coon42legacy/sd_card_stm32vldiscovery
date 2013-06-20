@@ -37,6 +37,11 @@
 #include "ffconf.h"
 #include "diskio.h"
 
+
+#define BOOL int
+#define TRUE  1
+#define FALSE 0
+
 // demo uses a command line option to define this (see Makefile):
 // #define STM32_SD_USE_DMA
 
@@ -133,6 +138,29 @@
  /* - for SPI1 and full-speed APB2: 72MHz/4 */
  #define SPI_BaudRatePrescaler_SPI_SD  SPI_BaudRatePrescaler_4
 
+// SPI2 port
+#elif defined(USE_STM32_VLDISCOVERY)
+ #define CARD_SUPPLY_SWITCHABLE   0
+ #define SOCKET_WP_CONNECTED      0
+ #define SOCKET_CP_CONNECTED      0
+ #define SPI_SD                   SPI2
+ #define GPIO_CS                  GPIOB
+ #define RCC_APB2Periph_GPIO_CS   RCC_APB2Periph_GPIOB
+ #define GPIO_Pin_CS              GPIO_Pin_1
+ #define DMA_Channel_SPI_SD_RX    DMA1_Channel2
+ #define DMA_Channel_SPI_SD_TX    DMA1_Channel3
+ #define DMA_FLAG_SPI_SD_TC_RX    DMA1_FLAG_TC2
+ #define DMA_FLAG_SPI_SD_TC_TX    DMA1_FLAG_TC3
+ #define GPIO_SPI_SD              GPIOB
+ #define GPIO_Pin_SPI_SD_SCK      GPIO_Pin_13
+ #define GPIO_Pin_SPI_SD_MISO     GPIO_Pin_14
+ #define GPIO_Pin_SPI_SD_MOSI     GPIO_Pin_15
+ #define RCC_APBPeriphClockCmd_SPI_SD  RCC_APB1PeriphClockCmd
+ #define RCC_APBPeriph_SPI_SD     RCC_APB1Periph_SPI2
+ // - for SPI1 and full-speed APB2: 72MHz/4
+ #define SPI_BaudRatePrescaler_SPI_SD  SPI_BaudRatePrescaler_4
+
+/* SPI1 port
 #elif defined(USE_STM32_VLDISCOVERY)
  #define CARD_SUPPLY_SWITCHABLE   0
  #define SOCKET_WP_CONNECTED      0
@@ -151,8 +179,9 @@
  #define GPIO_Pin_SPI_SD_MOSI     GPIO_Pin_7
  #define RCC_APBPeriphClockCmd_SPI_SD  RCC_APB2PeriphClockCmd
  #define RCC_APBPeriph_SPI_SD     RCC_APB2Periph_SPI1
- /* - for SPI1 and full-speed APB2: 72MHz/4 */
+ // - for SPI1 and full-speed APB2: 72MHz/4
  #define SPI_BaudRatePrescaler_SPI_SD  SPI_BaudRatePrescaler_4
+*/
 
 #else
 #error "unsupported board"
@@ -1033,6 +1062,10 @@ DRESULT disk_ioctl (
 /* Device Timer Interrupt Procedure  (Platform dependent)                */
 /*-----------------------------------------------------------------------*/
 /* This function must be called in period of 10ms                        */
+
+#ifndef RAMFUNC
+#define RAMFUNC
+#endif
 
 RAMFUNC void disk_timerproc (void)
 {

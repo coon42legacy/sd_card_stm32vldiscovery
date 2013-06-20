@@ -88,7 +88,6 @@
     <File name="cmsis_boot/stm32f10x.h" path="cmsis_boot/stm32f10x.h" type="1"/>
     <File name="cmsis_boot/stm32f10x_conf.h" path="cmsis_boot/stm32f10x_conf.h" type="1"/>
     <File name="syscalls/syscalls.c" path="syscalls/syscalls.c" type="1"/>
-    <File name="sd/stm32f10x_conf.h" path="sd/stm32f10x_conf.h" type="1"/>
     <File name="cmsis/core_cm3.c" path="cmsis/core_cm3.c" type="1"/>
     <File name="stm_lib/inc/stm32f10x_spi.h" path="stm_lib/inc/stm32f10x_spi.h" type="1"/>
     <File name="sd/debug.c" path="sd/debug.c" type="1"/>
@@ -114,13 +113,14 @@
     <File name="stm32vldiscovery/STM32_Discovery.h" path="stm32vldiscovery/STM32_Discovery.h" type="1"/>
     <File name="stm_lib/inc/stm32f10x_bkp.h" path="stm_lib/inc/stm32f10x_bkp.h" type="1"/>
     <File name="sd/uart.h" path="sd/uart.h" type="1"/>
-    <File name="sd/ff.c" path="sd/ff.c" type="1"/>
     <File name="sd/sd_spi_stm32.c" path="sd/sd_spi_stm32.c" type="1"/>
+    <File name="sd/ff.c" path="sd/ff.c" type="1"/>
     <File name="stm_lib/src" path="" type="2"/>
     <File name="cmsis" path="" type="2"/>
     <File name="sd/uart.c" path="sd/uart.c" type="1"/>
     <File name="stm_lib" path="" type="2"/>
     <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
+    <File name="sd/option" path="" type="2"/>
     <File name="sd/stm32f10x_it.c" path="sd/stm32f10x_it.c" type="1"/>
     <File name="stm_lib/inc/stm32f10x_rcc.h" path="stm_lib/inc/stm32f10x_rcc.h" type="1"/>
     <File name="syscalls" path="" type="2"/>
