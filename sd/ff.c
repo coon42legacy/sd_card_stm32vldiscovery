@@ -2238,9 +2238,15 @@ FRESULT validate (	/* FR_OK(0): The object is valid, !=0: Invalid */
 {
 	FIL *fil = (FIL*)obj;	/* Assuming offset of fs and id in the FIL/DIR is identical */
 
-
-	if (!fil || !fil->fs || !fil->fs->fs_type || fil->fs->id != fil->id)
+	if (!fil)
 		return FR_INVALID_OBJECT;
+	if (!fil->fs)
+		return FR_INVALID_OBJECT;
+	if (!fil->fs->fs_type)
+		return FR_INVALID_OBJECT;
+	if (fil->fs->id != fil->id)
+		return FR_INVALID_OBJECT;
+
 
 	ENTER_FF(fil->fs);		/* Lock file system */
 

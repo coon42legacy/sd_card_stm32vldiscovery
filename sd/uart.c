@@ -50,7 +50,7 @@ void InitializeUarts(void) {
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 
     // Prepare parameters first - traditional 115.2 / 8b / no parity, no flow control
-    USART_InitStructure.USART_BaudRate = 115200;
+    USART_InitStructure.USART_BaudRate = 921600; // this is fast but sometimes you get transmission errors
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
     USART_InitStructure.USART_Parity = USART_Parity_No;

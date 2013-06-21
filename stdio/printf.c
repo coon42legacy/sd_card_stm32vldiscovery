@@ -24,7 +24,7 @@ void PrintChar(char c)
 }
 
 /** Maximum string size allowed (in bytes). */
-#define MAX_STRING_SIZE         100
+#define MAX_STRING_SIZE         512
 
 
 /** Required for proper compilation. */
@@ -512,6 +512,8 @@ signed int puts(const char *pStr)
  * @param The character written if successful, or -1 if the output stream is
  *        not stdout or stderr.
  */
+
+/*
 signed int fputc(signed int c, FILE *pStream)
 {
     if ((pStream == stdout) || (pStream == stderr)) {
@@ -525,7 +527,7 @@ signed int fputc(signed int c, FILE *pStream)
         return EOF;
     }
 }
-
+*/
 
 /**
  * @brief  Implementation of fputs using the DBGU as the standard output. Required
