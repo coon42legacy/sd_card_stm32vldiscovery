@@ -57,14 +57,26 @@
  * Note 2: At the moment it takes a volatile char because the received_string variable
  * 		   declared as volatile char --> otherwise the compiler will spit out warnings
  * */
-	void USART_puts(USART_TypeDef* USARTx, volatile char *s){
-
-		while(*s){
+void USART_puts(USART_TypeDef* USARTx, volatile char *s)
+{
+	while(*s)
+	{
 		// wait until data register is empty
 		while( !(USARTx->SR & 0x00000040) );
+
 		USART_SendData(USARTx, *s);
 		*s++;
 	}
+}
+
+unsigned char USART_getc(USART_TypeDef* USARTx)
+{
+	// wait until data register is empty
+	/* Wait until the data is ready to be received. */
+	while ((USARTx->SR & USART_SR_RXNE) == 0);
+
+	// read RX data, combine with DR mask (we only accept a max of 9 Bits)
+	return USARTx->DR & 0x1FF;
 }
 
 // This will print on usart 1 (the original function has been commented out in printf.c !!!
@@ -78,6 +90,19 @@ int fputc(int ch, FILE * f)
 
 
 	return ch;
+}
+
+// receives an 32 bit integer from serial port. (little endian)
+uint32_t USART_recv_dword(USART_TypeDef* USARTx)
+{
+	uint32_t i, result = 0;
+	for(i = 0; i < 4; i++)
+	{
+		uint32_t recv = USART_getc(USART1) << (i * 8);
+		result |= recv;
+	}
+
+	return result;
 }
 
 
@@ -186,7 +211,7 @@ FRESULT scan_files (char* path)
 				if (res != FR_OK) break;
 			} else {
 
-				printf("%s/%s\r\n", path, fn);
+				printf("%s/%s - %d Bytes\r\n", path, fn, Finfo.fsize);
 
 				acc_files++;
 				acc_size += Finfo.fsize;
@@ -206,6 +231,12 @@ int main(void) {
     uint32_t dw;
     uint16_t w;
     uint8_t b;
+    uint32_t i, j;
+
+    char file_name[64];
+    uint32_t file_size;
+
+    static uint8_t buffer[1024];
 
 	//
 	// Clock initialization
@@ -353,44 +384,88 @@ int main(void) {
 				(fs->n_fatent - 2) * (fs->csize / 2) / 1024, p * (fs->csize / 2) / 1024
 
 		);
-
 	}
 
+	FIL *fp = malloc( sizeof(FIL) );
 
-/* code for reading a file and sending it to the serial port
-	int size = sizeof(FIL);
-	FIL *fp = malloc(size);
+	// code for receiving a file from the serial port and writing to sd card
+	printf("waiting for file info...\n");
 
-	int i, j;
-	for(i = 0; i < size; i++)
+
+	// file size of the receiving file
+	printf("file size: ");
+	file_size = USART_recv_dword(USART1);
+
+	printf("%d\n", file_size);
+
+
+	// file name of the receiving file
+	printf("file name: ");
+	i = 0;
+	do
 	{
-		char *byte_ptr = (char*)fp;
+		b = USART_getc(USART1);
+		file_name[i] = b;
 
-		byte_ptr[i] = 0;
+		i++;
 	}
+	while (b != '\0');
+	printf("%s\n", file_name);
 
-	iprintf("now sending file:\n");
+	printf("ready to receive! now send the file!\n");
+	// create file on sd card
+	res = f_open (fp, file_name, FA_CREATE_ALWAYS | FA_WRITE);
 
-	res = f_open (fp, "/VARIOUS/ROLLIN~1.109/08BARB~1.MP3", FA_READ);
-
-	if (res != FR_OK)
-		iprintf("error opening file.");
-
-	char buf[1024];
-	UINT bytes_read = 0;
-
-	for(i = 0; i < fp->fsize; i += bytes_read)
+	// now receive the file!
+	uint8_t bytes_written = 0;
+	for(i = 0; i < file_size; i += 1024)
 	{
-		 res = f_read(fp, buf, 1024, &bytes_read);
-		 if(bytes_read < 1024)
-			 bytes_read--;
+		uint32_t chunk_size = i + 1024 < file_size ? 1024 : file_size - i;
 
-		 for(j = 0; j < bytes_read; j++)
-		 {
-			 while( !(USART1->SR & 0x00000040) ); // wait until data register is empty
-		     USART_SendData(USART1, buf[j]);
-		 }
+		// write every 1024 byte chunk to sd card, not every byte
+		for(j = 0; j < chunk_size; j++)
+			buffer[j] = USART_getc(USART1);
+
+		f_write(fp, buffer, chunk_size, &bytes_written); // TODO: Flowcontrol!!!
 	}
+
+	// close file
+	f_close(fp);
+
+	printf("file received successfully!!!\n");
+
+	free(fp);
+
+
+	/*
+	// code for reading a file and sending it to the serial port
+	printf("now sending file:\n");
+
+	res = f_open (fp, "/jammin.mid", FA_READ);
+
+	if (res == FR_OK)
+	{
+		static char buf[1024];
+		UINT bytes_read = 0;
+
+		for(i = 0; i < fp->fsize; i += bytes_read)
+		{
+			 res = f_read(fp, buf, 1024, &bytes_read);
+			 if(bytes_read < 1024)
+				 bytes_read--;
+
+			 for(j = 0; j < bytes_read; j++)
+			 {
+				 while( !(USART1->SR & 0x00000040) ); // wait until data register is empty
+				 USART_SendData(USART1, buf[j]);
+			 }
+		}
+
+		f_close(fp);
+	}
+	else
+		printf("error opening file.");
+
 
 	free(fp);
 */
